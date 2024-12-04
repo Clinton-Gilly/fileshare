@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GenZ File Share</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #8B5CF6;
+            --secondary: #EC4899;
+            --dark: #1F2937;
+            --light: #F3F4F6;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', system-ui, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, var(--dark), #2D3748);
+            color: var(--light);
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 3rem;
+            animation: fadeDown 0.8s ease-out;
+        }
+
+        .header h1 {
+            font-size: 3rem;
+            background: linear-gradient(to right, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            color: transparent;
+            margin-bottom: 1rem;
+        }
+
+        .upload-section {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            padding: 2rem;
+            border-radius: 1rem;
+            margin-bottom: 2rem;
+            animation: fadeUp 0.8s ease-out;
+        }
+
+        .upload-form {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .input-group {
+            position: relative;
+            animation: fadeRight 0.8s ease-out;
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 1rem;
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid transparent;
+            border-radius: 0.5rem;
+            color: var(--light);
+            transition: all 0.3s;
+        }
+
+        .input-group input:focus {
+            border-color: var(--primary);
+            outline: none;
+        }
+
+        .upload-btn {
+            background: linear-gradient(45deg, var(--primary), var(--secondary));
+            color: white;
+            padding: 1rem;
+            border: none;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            font-weight: bold;
+            transition: transform 0.3s;
+        }
+
+        .upload-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .files-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            animation: fadeUp 1s ease-out;
+        }
+
+        .files-section {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            padding: 1.5rem;
+            border-radius: 1rem;
+        }
+
+        .files-section h2 {
+            margin-bottom: 1rem;
+            color: var(--primary);
+        }
+
+        .file-item {
+            display: flex;
+            align-items: center;
+            padding: 0.8rem;
+            background: rgba(255, 255, 255, 0.05);
+            margin-bottom: 0.5rem;
+            border-radius: 0.5rem;
+            transition: transform 0.3s;
+        }
+
+        .file-item:hover {
+            transform: translateX(5px);
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .file-icon {
+            margin-right: 1rem;
+            color: var(--secondary);
+        }
+
+        @keyframes fadeDown {
+            from { transform: translateY(-20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        @keyframes fadeUp {
+            from { transform: translateY(20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        @keyframes fadeRight {
+            from { transform: translateX(-20px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        .notification {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            padding: 1rem 2rem;
+            border-radius: 0.5rem;
+            background: var(--primary);
+            color: white;
+            transform: translateY(100px);
+            opacity: 0;
+            transition: all 0.3s;
+        }
+
+        .notification.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 1rem;
+            }
+            .header h1 {
+                font-size: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚀 GenZ File Share</h1>
+            <p>Share files with style!</p>
+        </div>
+
+        <div class="upload-section">
+            <form id="uploadForm" class="upload-form">
+                {% csrf_token %}
+                <div class="input-group">
+                    <input type="file" id="file" required>
+                </div>
+                <div class="input-group">
+                    <input type="text" id="fileName" placeholder="Give your file a cool name" required>
+                </div>
+                <div class="input-group">
+                    <input type="password" id="password" placeholder="Password (optional)">
+                </div>
+                <button type="submit" class="upload-btn">
+                    <i class="fas fa-cloud-upload-alt"></i> Upload File
+                </button>
+            </form>
+        </div>
+
+        <div class="files-container">
+            <div class="files-section">
+                <h2>📤 Sent Files</h2>
+                <div id="sent-files"></div>
+            </div>
+            
+            <div class="files-section">
+                <h2>📥 Received Files</h2>
+                <div id="received-files"></div>
+            </div>
+        </div>
+    </div>
+
+    <div id="notification" class="notification"></div>
+
+    <script>
+        document.getElementById('uploadForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const formData = new FormData();
+            formData.append('file', document.getElementById('file').files[0]);
+            formData.append('fileName', document.getElementById('fileName').value);
+            const password = document.getElementById('password').value;
+            if (password) {
+                formData.append('password', password);
+            }
+
+            fetch('/upload/', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    showNotification('File uploaded successfully! 🎉');
+                    updateFileLists();
+                    this.reset();
+                }
+            });
+        });
+
+        function updateFileLists() {
+            fetch('/files/')
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('sent-files').innerHTML = data.sent.map(file => `
+                    <div class="file-item">
+                        <i class="fas fa-file file-icon"></i>
+                        <div>
+                            <div>${file.name} ${file.hasPassword ? '🔒' : ''}</div>
+                            <small>${file.date}</small>
+                        </div>
+                    </div>
+                `).join('');
+
+                document.getElementById('received-files').innerHTML = data.received.map(file => `
+                    <div class="file-item">
+                        <i class="fas fa-file file-icon"></i>
+                        <div>
+                            <div>${file.name} ${file.hasPassword ? '🔒' : ''}</div>
+                            <small>${file.date}</small>
+                        </div>
+                    </div>
+                `).join('');
+            });
+        }
+
+        function showNotification(message) {
+            const notification = document.getElementById('notification');
+            notification.textContent = message;
+            notification.classList.add('show');
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 3000);
+        }
+
+        // Initial load
+        updateFileLists();
+    </script>
+</body>
+</html>
